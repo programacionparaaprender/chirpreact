@@ -1,0 +1,237 @@
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="X-UA-Compatible" content="ie=edge">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.js"></script>
+		<!-- Required meta tags always come first -->
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<title>Chirp React</title>
+		<script src='https://unpkg.com/react@16.3.1/umd/react.production.min.js'></script>
+    	<script src='https://unpkg.com/react-dom@16.3.1/umd/react-dom.production.min.js'></script>
+    	<script src='https://unpkg.com/react-router-dom@5.0.0/umd/react-router-dom.min.js'></script>
+    	<script src='https://unpkg.com/babel-standalone@6.26.0/babel.js'></script>
+  
+
+		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+		
+		<!-- Bootstrap CSS -->
+		<link rel="stylesheet" href="css/bootstrap.css">
+		<!-- Carga de fuentes de Font  Awesome -->
+		<link rel="stylesheet" href="css/font-awesome.min.css">
+	
+		<!-- Carga de estilos css personalizados -->
+		<link rel="stylesheet" href="css/estilos.css">
+		<!-- jQuery first, then Tether, then Bootstrap JS. -->
+		<script src="js/jquery.min.js"></script>
+		<script src="js/bootstrap.min.js"></script>
+		<link rel="stylesheet" href="stylesheets/style.css">
+	</head>
+	<body>
+    	<div id="root"></div>
+		<script type='text/babel'>
+
+			class Main  extends React.PureComponent{
+				constructor(props){
+					super(props);
+					this.state = {
+						authenticated: String(window.localStorage.getItem('authenticated')),
+						current_user: String(window.localStorage.getItem('current_user')),
+						posts:[],
+						newPost:{}
+					};
+					this.obtenerPosts();
+				}
+				async post(event){
+					try{
+						this.setState({
+							newPost:{
+								created_by: this.state.current_user,
+								created_at: Date.now(),
+								text: this.state.newPost.text
+							}
+						});
+						const response = await axios.post('/api/posts', this.newPost);
+						if(response.status == 200){
+							this.posts = this.newPost;
+							this.newPost = {created_by: '', text: '', created_at: ''};
+							this.setState({
+								newPost:{
+									created_by: '',
+									text:'',
+									created_at: ''
+								}
+							});
+							await this.obtenerPosts();
+						}
+						event.preventDefault();
+					}catch(error){
+						console.log(error)
+					}
+				}
+				obtenerPosts(){
+					axios.get('/api/posts')
+					.then(response => {
+						if(response.status == 200){
+								this.setState({
+									posts: response.data
+								});
+							} 
+					})
+					.catch(e => {
+						console.log(error)
+					})           
+				}
+				handleChange1(e){
+					this.setState({
+						newPost:{
+							created_by: '',
+							text:String(e.target.value),
+							created_at: ''
+						}
+					});
+				}
+				render(){
+					
+					if(this.state.authenticated=='true'){
+						return(
+						<React.Fragment>
+							<div class="clearfix">
+								<form onSubmit={this.post()}>
+									<h4>{ this.state.current_user } says</h4>
+									<textarea 
+										required 
+										class="form-control" 
+										maxlength="200" 
+										rows="3" 
+										placeholder="Say something"
+										value={this.state.newPost.text} 
+										onChange={this.handleChange1}>
+									</textarea>
+									<input className="btn submit-btn pull-right" type="submit" value="Chirp!" />
+								</form>
+								</div>
+								<div id="post-stream">
+									<h4>Chirp Feed</h4>
+									{ this.state.posts.map(function(post) {
+										return <div className="post"> 
+												<p>{post.text}</p>
+												<small>Posted by @{post.created_by}</small>
+												<small className="pull-right">{ post.created_at }</small>
+											</div>
+										})
+									}
+								</div>
+					
+						</React.Fragment>
+						);
+					}else{
+						return(
+						<React.Fragment>
+							<div id="post-stream">
+								<h4>Chirp Feed</h4>
+								{ this.state.posts.map(function(post) {
+									return <div className="post"> 
+											<p>{post.text}</p>
+											<small>Posted by @{post.created_by}</small>
+											<small className="pull-right">{ post.created_at }</small>
+										</div>
+									})
+								}
+							</div>
+					
+						</React.Fragment>
+					);
+					}
+					
+				}
+			}
+
+			const Link = ReactRouterDOM.Link;
+			const Route = ReactRouterDOM.Route;
+	  
+			class App  extends React.PureComponent{
+				constructor(props){
+					super(props);
+					this.state = {
+						authenticated: String(window.localStorage.getItem('authenticated')),
+						current_user: String(window.localStorage.getItem('current_user'))
+					};
+				}
+				async signout(){
+					try{
+						const response = await axios.get('/auth/signout');
+						//console.log(JSON.stringify(response))
+						if(response.status == 200){
+							//console.log(response.status)
+							window.localStorage.setItem('authenticated', 'false')
+							window.localStorage.setItem('current_user', '')
+							this.setState({
+								authenticated: 'false',
+								current_user: ''
+							});
+						} 
+					}catch(error){
+						console.log(error)
+					}
+				}
+				render(){
+					if(this.state.authenticated=='false'){
+						return(
+					
+							<ReactRouterDOM.HashRouter>
+								<div id='main' className="container">
+									<nav className="navbar-fluid navbar-default navbar-fixed-top">
+										<div className="container">
+											<a className="navbar-brand" href="#"> Chirp! </a>
+											<p className="navbar-text"> Learn the MEAN stack by building this tiny app</p>
+												<p className="navbar-right navbar-text">
+													<Link to="/login">Login</Link> or
+													<Link to="/register">Register</Link>
+												</p>
+										</div>
+									</nav>
+								</div>
+					
+								<Route path="/" exact component={Main} />
+								<Route path="/login" component={Login} />
+								<Route path="/register" component={Register} />
+							</ReactRouterDOM.HashRouter>
+							)
+					}else{
+						return(
+							<ReactRouterDOM.HashRouter>
+								<div id='main' className="container">
+									<nav className="navbar-fluid navbar-default navbar-fixed-top">
+										<div className="container">
+											<a className="navbar-brand" href="#"> Chirp! </a>
+											<p className="navbar-text"> Learn the MEAN stack by building this tiny app</p>
+											<p className="navbar-right navbar-text">
+												<a href="#" onClick={this.signout}>Logout</a>
+											</p>
+											<p className="navbar-right navbar-text">
+												Signed in as {this.state.current_user}
+											</p>
+										</div>
+									</nav>
+								</div>
+					
+								<Route path="/" exact component={Main} />
+								<Route path="/login" component={Login} />
+								<Route path="/register" component={Register} />
+							</ReactRouterDOM.HashRouter>
+							)
+					}
+					
+				}
+			}  
+			const Home = () => <h1>Home</h1>
+			const Login = () => <h1>Login</h1>
+			const Register = () => <h1>Register</h1>
+	  
+			ReactDOM.render(<App />, document.querySelector('#root'));
+		  </script>
+	</body>
+</html>
