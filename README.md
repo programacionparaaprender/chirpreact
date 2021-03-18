@@ -51,3 +51,14 @@ https://es.reactjs.org/docs/forms.html
 
 ### bucles
 https://stackoverflow.com/questions/28994378/react-equivalent-for-ng-repeat
+
+### router push
+https://reactrouter.com/web/api/history
+
+### redirecciones con javascript
+https://www.w3schools.com/howto/howto_js_redirect_webpage.asp
+
+
+### servicio de suscripción
+https://stackoverflow.com/questions/40764596/using-react-router-with-cdn-and-without-webpack-or-browserify
+https://css-tricks.com/learning-react-router/

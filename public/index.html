@@ -12,7 +12,14 @@
 		<script src='https://unpkg.com/react@16.3.1/umd/react.production.min.js'></script>
     	<script src='https://unpkg.com/react-dom@16.3.1/umd/react-dom.production.min.js'></script>
     	<script src='https://unpkg.com/react-router-dom@5.0.0/umd/react-router-dom.min.js'></script>
-    	<script src='https://unpkg.com/babel-standalone@6.26.0/babel.js'></script>
+
+
+		<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.js"></script>
+	
+		<script src="https://npmcdn.com/react-router@2.4.0/umd/ReactRouter.js"></script> -->
+
+		
+		<script src='https://unpkg.com/babel-standalone@6.26.0/babel.js'></script>
   
 
 		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
@@ -32,6 +39,104 @@
 	<body>
     	<div id="root"></div>
 		<script type='text/babel'>
+			//var Router = ReactRouter.Router;
+			var IndexRoute = ReactRouterDOM.IndexRoute;
+			var browserHistory = ReactRouterDOM.browserHistory;
+			
+			const Link = ReactRouterDOM.Link;
+			const Route = ReactRouterDOM.Route;
+
+
+			const Router = window.ReactRouterDOM.BrowserRouter;
+			const Prompt =  window.ReactRouterDOM.Prompt;
+			const Switch = window.ReactRouterDOM.Switch;
+			const Redirect = window.ReactRouterDOM.Redirect;
+
+			//window.localStorage.setItem('authenticated','false')
+			//window.localStorage.setItem('current_user','')
+
+			class Login  extends React.PureComponent{
+				constructor(props){
+					super(props);
+					this.state = {
+						error_message: '',
+						username:"",
+						password:""
+
+					};
+					this.handleChange1 = this.handleChange1.bind(this);
+					this.handleChange2 = this.handleChange2.bind(this);
+					this.login = this.login.bind(this);
+				}
+				handleChange1(e){
+					this.setState({
+						username:String(e.target.value)
+					});
+				}
+				handleChange2(e){
+					this.setState({
+						password:String(e.target.value)
+					});
+				}
+				async login(event){
+					try{
+						const response = await axios.post('/auth/login', this.user);
+						if(response.status == 200){
+							window.localStorage.setItem('authenticated', 'true')
+							window.localStorage.setItem('current_user', this.state.username)
+							
+
+							//this.props.history.push("/");
+							window.location.href = "http://localhost:3000/#/";
+							//browserHistory.push('/#/');
+							//window.location.target
+							
+							//const history = useHistory();
+  							//history.push('/');
+
+							
+							
+						}
+						event.preventDefault();
+					}catch(error){
+						this.setState({
+							error_message: error
+						});
+						console.log(error)
+					}
+				}
+
+				render(){
+					return(
+						<React.Fragment>
+		
+							<form className="form-auth" onSubmit={this.login}>
+								<h2>Log In</h2>
+								<p className="text-warning">{ this.state.error_message }</p>
+								<div className="form-group">
+									<input 
+										type="username" 
+										onChange={this.handleChange1}
+										laceholder="Username" 
+										className="form-control"/>
+								</div>
+								<div className="form-group">
+									<input 
+										type="password" 
+										onChange={this.handleChange2} 
+										placeholder="Password" 
+										className="form-control"/>
+								</div>
+								
+								<input type="submit" value="Log in" class="btn btn-primary" />
+							</form>	
+						</React.Fragment>
+					);
+					
+					
+				}
+			}
+
 
 			class Main  extends React.PureComponent{
 				constructor(props){
@@ -42,21 +147,38 @@
 						posts:[],
 						newPost:{}
 					};
+					this.obtenerPosts = this.obtenerPosts.bind(this);
+					this.handleChange1 = this.handleChange1.bind(this);
+					this.post = this.post.bind(this);
 					this.obtenerPosts();
 				}
 				async post(event){
+					event.preventDefault();
+					//event.preventDefault();
+					console.log('this.state.newPost.text: ' + this.state.newPost.text)
+					const text = this.state.newPost.text
 					try{
 						this.setState({
 							newPost:{
-								created_by: this.state.current_user,
+								created_by: String(window.localStorage.getItem('current_user')),
 								created_at: Date.now(),
-								text: this.state.newPost.text
+								text: text
 							}
 						});
-						const response = await axios.post('/api/posts', this.newPost);
+						console.log(JSON.stringify({
+								created_by: String(window.localStorage.getItem('current_user')),
+								created_at: Date.now(),
+								text: text
+							}))
+						const response = await axios.post('/api/posts', {
+								created_by: String(window.localStorage.getItem('current_user')),
+								created_at: Date.now(),
+								text: text
+							});
 						if(response.status == 200){
-							this.posts = this.newPost;
-							this.newPost = {created_by: '', text: '', created_at: ''};
+							//this.posts = this.newPost;
+							//this.newPost = {created_by: '', text: '', created_at: ''};
+							console.log('funciono')
 							this.setState({
 								newPost:{
 									created_by: '',
@@ -64,12 +186,15 @@
 									created_at: ''
 								}
 							});
-							await this.obtenerPosts();
+							this.obtenerPosts();
+						}else{
+							console.log('ocurrio un error')
 						}
-						event.preventDefault();
+						
 					}catch(error){
 						console.log(error)
 					}
+					
 				}
 				obtenerPosts(){
 					axios.get('/api/posts')
@@ -87,36 +212,59 @@
 				handleChange1(e){
 					this.setState({
 						newPost:{
-							created_by: '',
+							created_by: String(window.localStorage.getItem('current_user')),
 							text:String(e.target.value),
 							created_at: ''
 						}
 					});
 				}
 				render(){
-					
-					if(this.state.authenticated=='true'){
+					console.log('this.state.authenticated: '+this.state.authenticated)
+					//onSubmit={this.post()}
+					if(window.localStorage.getItem('authenticated')=='true'){
 						return(
 						<React.Fragment>
-							<div class="clearfix">
-								<form onSubmit={this.post()}>
-									<h4>{ this.state.current_user } says</h4>
-									<textarea 
-										required 
-										class="form-control" 
-										maxlength="200" 
-										rows="3" 
-										placeholder="Say something"
-										value={this.state.newPost.text} 
-										onChange={this.handleChange1}>
-									</textarea>
-									<input className="btn submit-btn pull-right" type="submit" value="Chirp!" />
-								</form>
+							<div style={{'width':'35rem','margin':'auto','padding':'5rem'}}>
+								<div className="clearfix">
+									<form onSubmit={this.post}>
+										<h4>{ this.state.current_user } says</h4>
+										<textarea 
+											required 
+											className="form-control" 
+											maxlength="200" 
+											rows="3" 
+											placeholder="Say something"
+											value={this.state.newPost.text} 
+											onChange={this.handleChange1}>
+										</textarea>
+										<input className="btn submit-btn pull-right" type="submit" value="Chirp!" />
+									</form>
 								</div>
+								
 								<div id="post-stream">
 									<h4>Chirp Feed</h4>
 									{ this.state.posts.map(function(post) {
-										return <div className="post"> 
+										return <div className="post card cart-default"> 
+												<p>{post.text}</p>
+												<small>Posted by @{post.created_by}</small>
+												<small className="pull-right">{ post.created_at }</small>
+											</div>
+										})
+									}
+									
+								</div>
+							</div>
+						</React.Fragment>
+						);
+					}
+					else{
+						return(
+						<React.Fragment>
+							<div style={{'width':'35rem','margin':'auto','padding':'5rem'}}>
+								<div id="post-stream">
+									<h4>Chirp Feed</h4>
+									{ this.state.posts.map(function(post) {
+										return <div className="post card cart-default">
 												<p>{post.text}</p>
 												<small>Posted by @{post.created_by}</small>
 												<small className="pull-right">{ post.created_at }</small>
@@ -124,24 +272,7 @@
 										})
 									}
 								</div>
-					
-						</React.Fragment>
-						);
-					}else{
-						return(
-						<React.Fragment>
-							<div id="post-stream">
-								<h4>Chirp Feed</h4>
-								{ this.state.posts.map(function(post) {
-									return <div className="post"> 
-											<p>{post.text}</p>
-											<small>Posted by @{post.created_by}</small>
-											<small className="pull-right">{ post.created_at }</small>
-										</div>
-									})
-								}
 							</div>
-					
 						</React.Fragment>
 					);
 					}
@@ -149,8 +280,7 @@
 				}
 			}
 
-			const Link = ReactRouterDOM.Link;
-			const Route = ReactRouterDOM.Route;
+			
 	  
 			class App  extends React.PureComponent{
 				constructor(props){
@@ -159,6 +289,7 @@
 						authenticated: String(window.localStorage.getItem('authenticated')),
 						current_user: String(window.localStorage.getItem('current_user'))
 					};
+					this.signout = this.signout.bind(this);
 				}
 				async signout(){
 					try{
@@ -172,16 +303,18 @@
 								authenticated: 'false',
 								current_user: ''
 							});
+							//this.props.history.push("/")
+							window.location.href = "http://localhost:3000/#/";
 						} 
 					}catch(error){
 						console.log(error)
 					}
 				}
 				render(){
-					if(this.state.authenticated=='false'){
+					if(window.localStorage.getItem('authenticated')=='false'){
 						return(
 					
-							<ReactRouterDOM.HashRouter>
+							<Router history={browserHistory}>
 								<div id='main' className="container">
 									<nav className="navbar-fluid navbar-default navbar-fixed-top">
 										<div className="container">
@@ -198,11 +331,11 @@
 								<Route path="/" exact component={Main} />
 								<Route path="/login" component={Login} />
 								<Route path="/register" component={Register} />
-							</ReactRouterDOM.HashRouter>
+							</Router>
 							)
 					}else{
 						return(
-							<ReactRouterDOM.HashRouter>
+							<Router history={browserHistory}>
 								<div id='main' className="container">
 									<nav className="navbar-fluid navbar-default navbar-fixed-top">
 										<div className="container">
@@ -221,14 +354,13 @@
 								<Route path="/" exact component={Main} />
 								<Route path="/login" component={Login} />
 								<Route path="/register" component={Register} />
-							</ReactRouterDOM.HashRouter>
+							</Router>
 							)
 					}
 					
 				}
 			}  
 			const Home = () => <h1>Home</h1>
-			const Login = () => <h1>Login</h1>
 			const Register = () => <h1>Register</h1>
 	  
 			ReactDOM.render(<App />, document.querySelector('#root'));

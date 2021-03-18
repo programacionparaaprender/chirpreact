@@ -54,10 +54,9 @@ window.onload = function () {
                         this.$router.push('/');
                         
                     }
-                    else{
-                        this.error_message = data.message;
-                    }
                 }catch(error){
+
+                    this.error_message = error;
                     console.log(error)
                 }
             }
