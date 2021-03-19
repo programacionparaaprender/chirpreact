@@ -55,6 +55,86 @@
 			//window.localStorage.setItem('authenticated','false')
 			//window.localStorage.setItem('current_user','')
 
+			class Register  extends React.PureComponent{
+				constructor(props){
+					super(props);
+					this.state = {
+						error_message: '',
+						username:"",
+						password:""
+
+					};
+					this.handleChange1 = this.handleChange1.bind(this);
+					this.handleChange2 = this.handleChange2.bind(this);
+					this.register = this.register.bind(this);
+				}
+				handleChange1(e){
+					this.setState({
+						username:String(e.target.value)
+					});
+				}
+				handleChange2(e){
+					this.setState({
+						password:String(e.target.value)
+					});
+				}
+				async register(event){
+					try{
+						const user = {
+							username: this.state.username,
+							password: this.state.password
+						}
+						const response = await axios.post('/auth/signup', user);
+						if(response.status == 200){
+							window.localStorage.setItem('authenticated', 'true')
+							window.localStorage.setItem('current_user', this.state.username)
+							
+
+							//this.props.history.push("/#/");
+							window.location.href = "http://localhost:3000/#/";
+							//browserHistory.push('/#/');
+							//window.location.target
+							
+							//const history = useHistory();
+  							//history.push('/');
+
+							
+							
+						}
+						event.preventDefault();
+					}catch(error){
+						this.setState({
+							error_message: error
+						});
+						console.log(error)
+					}
+				}
+
+				render(){
+					const error_message="";
+					return(
+						<React.Fragment>
+		
+							<form className="form-auth" onSubmit={this.register}>
+								<h2>Register</h2>
+								<p className="text-warning">{ error_message }</p>
+								<div className="form-group">
+									<input type="username" ng-model="user.username" placeholder="Username" className="form-control" />
+								</div>
+								<div className="form-group">
+									<input type="password" ng-model="user.password" placeholder="Password" className="form-control" />
+								</div>
+								<input type="submit" value="Register" className="btn btn-primary" />
+							</form>
+
+						</React.Fragment>
+					);
+					
+					
+				}
+			}
+
+
 			class Login  extends React.PureComponent{
 				constructor(props){
 					super(props);
@@ -80,7 +160,12 @@
 				}
 				async login(event){
 					try{
-						const response = await axios.post('/auth/login', this.user);
+						event.preventDefault();
+						const user = {
+							username: this.state.username,
+							password: this.state.password
+						}
+						const response = await axios.post('/auth/login', user);
 						if(response.status == 200){
 							window.localStorage.setItem('authenticated', 'true')
 							window.localStorage.setItem('current_user', this.state.username)
@@ -97,7 +182,7 @@
 							
 							
 						}
-						event.preventDefault();
+						
 					}catch(error){
 						this.setState({
 							error_message: error
@@ -365,7 +450,7 @@
 				}
 			}  
 			const Home = () => <h1>Home</h1>
-			const Register = () => <h1>Register</h1>
+			//const Register = () => <h1>Register</h1>
 	  
 			ReactDOM.render(<App />, document.querySelector('#root'));
 		  </script>
