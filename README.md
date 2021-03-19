@@ -62,3 +62,6 @@ https://www.w3schools.com/howto/howto_js_redirect_webpage.asp
 ### servicio de suscripción
 https://stackoverflow.com/questions/40764596/using-react-router-with-cdn-and-without-webpack-or-browserify
 https://css-tricks.com/learning-react-router/
+
+### instalaciones adicionales
+npm install nodemon

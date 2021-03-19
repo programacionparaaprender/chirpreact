@@ -86,7 +86,7 @@
 							window.localStorage.setItem('current_user', this.state.username)
 							
 
-							//this.props.history.push("/");
+							//this.props.history.push("/#/");
 							window.location.href = "http://localhost:3000/#/";
 							//browserHistory.push('/#/');
 							//window.location.target
@@ -303,8 +303,9 @@
 								authenticated: 'false',
 								current_user: ''
 							});
+							//history.push('/');
 							//this.props.history.push("/")
-							window.location.href = "http://localhost:3000/#/";
+							//window.location.href = "http://localhost:3000/#/";
 						} 
 					}catch(error){
 						console.log(error)
@@ -327,10 +328,11 @@
 										</div>
 									</nav>
 								</div>
-					
+								<Switch>
 								<Route path="/" exact component={Main} />
 								<Route path="/login" component={Login} />
 								<Route path="/register" component={Register} />
+								</Switch>
 							</Router>
 							)
 					}else{
@@ -342,7 +344,7 @@
 											<a className="navbar-brand" href="#"> Chirp! </a>
 											<p className="navbar-text"> Learn the MEAN stack by building this tiny app</p>
 											<p className="navbar-right navbar-text">
-												<a href="#" onClick={this.signout}>Logout</a>
+												<Link to="/login" onClick={this.signout}>Logout</Link>
 											</p>
 											<p className="navbar-right navbar-text">
 												Signed in as {this.state.current_user}
@@ -351,9 +353,11 @@
 									</nav>
 								</div>
 					
+								<Switch>
 								<Route path="/" exact component={Main} />
 								<Route path="/login" component={Login} />
 								<Route path="/register" component={Register} />
+								</Switch>
 							</Router>
 							)
 					}
